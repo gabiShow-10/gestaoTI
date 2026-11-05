@@ -43,4 +43,19 @@ router.get('/', (req, res) => {
     res.status(200).json(lista);
 });
 
+// GET /api/v1/chamados/:id
+router.get('/:id', (req, res) => {
+    const chamado = db.chamados.find(
+        (c) => c.id === Number(req.params.id)
+    );
+
+    if (!chamado) {
+        return res.status(404).json({
+            erro: 'Chamado nao encontrado.'
+        });
+    }
+
+    res.status(200).json(chamado);
+});
+
 module.exports = router;
