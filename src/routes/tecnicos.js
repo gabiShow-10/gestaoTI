@@ -28,4 +28,19 @@ router.get('/', (req, res) => {
     res.status(200).json(lista);
 });
 
+// GET /api/v1/tecnicos/:id
+router.get('/:id', (req, res) => {
+    const tecnico = db.tecnicos.find(
+        (t) => t.id === Number(req.params.id)
+    );
+
+    if (!tecnico) {
+        return res.status(404).json({
+            erro: 'Tecnico nao encontrado.'
+        });
+    }
+
+    res.status(200).json(tecnico);
+});
+
 module.exports = router;
