@@ -1,27 +1,26 @@
 const express = require('express');
-
 const app = express();
-<<<<<<< HEAD
-const PORT = process.env.PORT || 3013;
-=======
 const PORT = process.env.PORT || 3014;
->>>>>>> cefafed (Adiciona configuração do banco de dados)
 
+// Importar rotas
+const tecnicosRouter = require('./src/routes/tecnicos');
+
+// Middleware
 app.use(express.json());
 
+// Rota de saúde da API
 app.get('/api/v1/health', (req, res) => {
-  res.status(200).json({
-    status: 'OK',
-    servico: 'API de Chamados de Suporte T.I.',
-    timestamp: new Date()
-  });
+    res.status(200).json({
+        status: 'OK',
+        servico: 'API de Chamados de Suporte T.I.',
+        timestamp: new Date()
+    });
 });
 
+// Rota de técnicos
+app.use('/api/v1/tecnicos', tecnicosRouter);
+
+// Iniciar servidor
 app.listen(PORT, () => {
-  console.log(`[Chamados T.I.] API rodando na porta ${PORT}`);
+    console.log(`[Chamados T.I.] API rodando na porta ${PORT}`);
 });
-<<<<<<< HEAD
-
-
-=======
->>>>>>> cefafed (Adiciona configuração do banco de dados)
