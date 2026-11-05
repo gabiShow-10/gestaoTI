@@ -4,6 +4,7 @@ const PORT = process.env.PORT || 3014;
 
 // Importar rotas
 const tecnicosRouter = require('./src/routes/tecnicos');
+const chamadosRouter = require('./src/routes/chamados');
 
 // Middleware
 app.use(express.json());
@@ -19,6 +20,9 @@ app.get('/api/v1/health', (req, res) => {
 
 // Rota de técnicos
 app.use('/api/v1/tecnicos', tecnicosRouter);
+
+// Rota de chamados
+app.use('/api/v1/chamados', chamadosRouter);
 
 // Iniciar servidor
 app.listen(PORT, () => {
