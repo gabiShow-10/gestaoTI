@@ -69,4 +69,30 @@ router.post('/', (req, res) => {
     res.status(201).json(novo);
 });
 
+// PUT /api/v1/tecnicos/:id (substitui o registro inteiro)
+router.put('/:id', (req, res) => {
+    const tecnico = db.tecnicos.find((t) => t.id === Number(req.params.id));
+
+    if (!tecnico) {
+        return res.status(404).json({ erro: 'Tecnico nao encontrado.' });
+    }
+
+    const body = req.body || {};
+    const erros = validarTecnico(body);
+
+    if (erros.length > 0) {
+        return res.status(400).json({
+            erro: 'Payload invalido.',
+            detalhes: erros
+        });
+    }
+
+    tecnico.nome = body.nome.trim();
+    tecnico.email = body.email.trim();
+    tecnico.especialidade = maiusculo(body.especialidade);
+    tecnico.status = body.status ? maiusculo(body.status) : 'ATIVO';
+
+    res.status(200).json(tecnico);
+});
+
 module.exports = router;
