@@ -135,4 +135,76 @@ router.put('/:id', (req, res) => {
     res.status(200).json(chamado);
 });
 
+// PATCH /api/v1/chamados/:id (atualiza só os campos enviados)
+router.patch('/:id', (req, res) => {
+    const chamado = db.chamados.find(
+        (c) => c.id === Number(req.params.id)
+    );
+
+    if (!chamado) {
+        return res.status(404).json({
+            erro: 'Chamado nao encontrado.'
+        });
+    }
+
+    const body = req.body || {};
+
+    const enviados = CAMPOS.filter(
+        (campo) => body[campo] !== undefined
+    );
+
+    if (enviados.length === 0) {
+        return res.status(400).json({
+            erro: `Envie ao menos um campo para atualizar: ${CAMPOS.join(', ')}.`
+        });
+    }
+
+    const erros = validarChamado(body, true);
+
+    if (erros.length > 0) {
+        return res.status(400).json({
+            erro: 'Payload invalido.',
+            detalhes: erros
+        });
+    }
+
+    if (
+        body.tecnicoId !== undefined &&
+        body.tecnicoId !== null &&
+        !tecnicoExiste(body.tecnicoId)
+    ) {
+        return res.status(404).json({
+            erro: 'Tecnico informado em tecnicoId nao encontrado.'
+        });
+    }
+
+    if (body.titulo !== undefined) {
+        chamado.titulo = body.titulo.trim();
+    }
+
+    if (body.descricao !== undefined) {
+        chamado.descricao = body.descricao.trim();
+    }
+
+    if (body.prioridade !== undefined) {
+        chamado.prioridade = maiusculo(body.prioridade);
+    }
+
+    if (body.solicitante !== undefined) {
+        chamado.solicitante = body.solicitante.trim();
+    }
+
+    if (body.status !== undefined) {
+        chamado.status = maiusculo(body.status);
+    }
+
+    if (body.tecnicoId !== undefined) {
+        chamado.tecnicoId = body.tecnicoId;
+    }
+
+    chamado.atualizadoEm = db.agora();
+
+    res.status(200).json(chamado);
+});
+
 module.exports = router;
