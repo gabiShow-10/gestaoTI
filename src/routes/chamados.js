@@ -98,4 +98,41 @@ router.post('/', (req, res) => {
     res.status(201).json(novo);
 });
 
+// PUT /api/v1/chamados/:id (substitui o registro inteiro)
+router.put('/:id', (req, res) => {
+    const chamado = db.chamados.find((c) => c.id === Number(req.params.id));
+
+    if (!chamado) {
+        return res.status(404).json({ erro: 'Chamado nao encontrado.' });
+    }
+
+    const body = req.body || {};
+    const erros = validarChamado(body);
+
+    if (erros.length > 0) {
+        return res.status(400).json({
+            erro: 'Payload invalido.',
+            detalhes: erros
+        });
+    }
+
+    const tecnicoId = body.tecnicoId === undefined ? null : body.tecnicoId;
+
+    if (tecnicoId !== null && !tecnicoExiste(tecnicoId)) {
+        return res.status(404).json({
+            erro: 'Tecnico informado em tecnicoId nao encontrado.'
+        });
+    }
+
+    chamado.titulo = body.titulo.trim();
+    chamado.descricao = body.descricao.trim();
+    chamado.prioridade = maiusculo(body.prioridade);
+    chamado.solicitante = body.solicitante.trim();
+    chamado.status = body.status ? maiusculo(body.status) : 'ABERTO';
+    chamado.tecnicoId = tecnicoId;
+    chamado.atualizadoEm = db.agora();
+
+    res.status(200).json(chamado);
+});
+
 module.exports = router;
