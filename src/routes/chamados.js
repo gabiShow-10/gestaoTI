@@ -207,4 +207,25 @@ router.patch('/:id', (req, res) => {
     res.status(200).json(chamado);
 });
 
+// DELETE /api/v1/chamados/:id
+router.delete('/:id', (req, res) => {
+    const indice = db.chamados.findIndex(
+        (c) => c.id === Number(req.params.id)
+    );
+
+    if (indice === -1) {
+        return res.status(404).json({
+            erro: 'Chamado nao encontrado.'
+        });
+    }
+
+    const [removido] = db.chamados.splice(indice, 1);
+
+    res.status(200).json({
+        mensagem: 'Chamado removido com sucesso.',
+        chamado: removido
+    });
+});
+
+
 module.exports = router;
