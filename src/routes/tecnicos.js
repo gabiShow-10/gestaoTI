@@ -95,7 +95,7 @@ router.put('/:id', (req, res) => {
     res.status(200).json(tecnico);
 });
 
-// PATCH /api/v1/tecnicos/:id (atualiza só os campos enviados)
+// PATCH /api/v1/tecnicos/:id (atualiza so os campos enviados)
 router.patch('/:id', (req, res) => {
     const tecnico = db.tecnicos.find(
         (t) => t.id === Number(req.params.id)
@@ -145,6 +145,26 @@ router.patch('/:id', (req, res) => {
     }
 
     res.status(200).json(tecnico);
+});
+
+// DELETE /api/v1/tecnicos/:id
+router.delete('/:id', (req, res) => {
+    const indice = db.tecnicos.findIndex(
+        (t) => t.id === Number(req.params.id)
+    );
+
+    if (indice === -1) {
+        return res.status(404).json({
+            erro: 'Tecnico nao encontrado.'
+        });
+    }
+
+    const [removido] = db.tecnicos.splice(indice, 1);
+
+    res.status(200).json({
+        mensagem: 'Tecnico removido com sucesso.',
+        tecnico: removido
+    });
 });
 
 module.exports = router;
