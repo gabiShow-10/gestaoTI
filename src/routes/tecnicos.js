@@ -43,4 +43,30 @@ router.get('/:id', (req, res) => {
     res.status(200).json(tecnico);
 });
 
+// POST /api/v1/tecnicos
+router.post('/', (req, res) => {
+    const body = req.body || {};
+
+    const erros = validarTecnico(body);
+
+    if (erros.length > 0) {
+        return res.status(400).json({
+            erro: 'Payload invalido.',
+            detalhes: erros
+        });
+    }
+
+    const novo = {
+        id: db.contadores.tecnico++,
+        nome: body.nome.trim(),
+        email: body.email.trim(),
+        especialidade: maiusculo(body.especialidade),
+        status: body.status ? maiusculo(body.status) : 'ATIVO'
+    };
+
+    db.tecnicos.push(novo);
+
+    res.status(201).json(novo);
+});
+
 module.exports = router;
