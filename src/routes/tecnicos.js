@@ -161,9 +161,24 @@ router.delete('/:id', (req, res) => {
 
     const [removido] = db.tecnicos.splice(indice, 1);
 
+let desvinculados = 0;
+
+db.chamados.forEach((chamado) => {
+    if (chamado.tecnicoId === removido.id) {
+        chamado.tecnicoId = null;
+
+        if (chamado.status === 'EM_ANDAMENTO') {
+            chamado.status = 'ABERTO';
+        }
+
+        chamado.atualizadoEm = db.agora();
+        desvinculados++;
+    }
+});
     res.status(200).json({
         mensagem: 'Tecnico removido com sucesso.',
-        tecnico: removido
+        tecnico: removido,
+	chamadosDesvinculados: desvinculados
     });
 });
 
