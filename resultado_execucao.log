@@ -1,0 +1,530 @@
+==================================================
+ AUDITORIA DA API - CHAMADOS DE SUPORTE T.I.
+ Data/Hora: Thu Nov 12 04:13:05 PM UTC 2026
+ Base: http://localhost:3014/api/v1
+==================================================
+
+######## TÉCNICOS ########
+
+>>> Listar todos os técnicos
+ GET /tecnicos
+ [PASSOU] HTTP 200 (esperado 200)
+[
+  {
+    "id": 1,
+    "nome": "Carlos Mendes",
+    "email": "carlos.mendes@empresa.com",
+    "especialidade": "REDES",
+    "status": "ATIVO"
+  },
+  {
+    "id": 2,
+    "nome": "Ana Souza",
+    "email": "ana.souza@empresa.com",
+    "especialidade": "SOFTWARE",
+    "status": "ATIVO"
+  },
+  {
+    "id": 3,
+    "nome": "Marcos Lima",
+    "email": "marcos.lima@empresa.com",
+    "especialidade": "HARDWARE",
+    "status": "INATIVO"
+  }
+]
+
+>>> Filtrar técnicos por especialidade
+ GET /tecnicos?especialidade=REDES
+ [PASSOU] HTTP 200 (esperado 200)
+[
+  {
+    "id": 1,
+    "nome": "Carlos Mendes",
+    "email": "carlos.mendes@empresa.com",
+    "especialidade": "REDES",
+    "status": "ATIVO"
+  }
+]
+
+>>> Filtrar técnicos por status
+ GET /tecnicos?status=ATIVO
+ [PASSOU] HTTP 200 (esperado 200)
+[
+  {
+    "id": 1,
+    "nome": "Carlos Mendes",
+    "email": "carlos.mendes@empresa.com",
+    "especialidade": "REDES",
+    "status": "ATIVO"
+  },
+  {
+    "id": 2,
+    "nome": "Ana Souza",
+    "email": "ana.souza@empresa.com",
+    "especialidade": "SOFTWARE",
+    "status": "ATIVO"
+  }
+]
+
+>>> Criar técnico
+ POST /tecnicos
+ [PASSOU] HTTP 201 (esperado 201)
+{
+  "id": 6,
+  "nome": "Teste Automacao",
+  "email": "teste@empresa.com",
+  "especialidade": "REDES",
+  "status": "ATIVO"
+}
+ [PASSOU] especialidade normalizada para maiúsculo: REDES
+ [PASSOU] status padrão do técnico: ATIVO
+
+>>> Criar técnico sem 'nome' (400)
+ POST /tecnicos
+ [PASSOU] HTTP 400 (esperado 400)
+{
+  "erro": "Payload invalido.",
+  "detalhes": [
+    "'nome' é obrigatório e deve ser um texto não vazio."
+  ]
+}
+
+>>> Buscar técnico por ID
+ GET /tecnicos/6
+ [PASSOU] HTTP 200 (esperado 200)
+{
+  "id": 6,
+  "nome": "Teste Automacao",
+  "email": "teste@empresa.com",
+  "especialidade": "REDES",
+  "status": "ATIVO"
+}
+
+>>> Buscar técnico inexistente (404)
+ GET /tecnicos/99999
+ [PASSOU] HTTP 404 (esperado 404)
+{
+  "erro": "Tecnico nao encontrado."
+}
+
+>>> Substituir técnico (PUT)
+ PUT /tecnicos/6
+ [PASSOU] HTTP 200 (esperado 200)
+{
+  "id": 6,
+  "nome": "Teste Atualizado",
+  "email": "novo@empresa.com",
+  "especialidade": "SOFTWARE",
+  "status": "ATIVO"
+}
+
+>>> PUT incompleto (400)
+ PUT /tecnicos/6
+ [PASSOU] HTTP 400 (esperado 400)
+{
+  "erro": "Payload invalido.",
+  "detalhes": [
+    "'email' é obrigatório e deve conter '@'.",
+    "'especialidade' é obrigatória."
+  ]
+}
+
+>>> PUT em técnico inexistente (404)
+ PUT /tecnicos/99999
+ [PASSOU] HTTP 404 (esperado 404)
+{
+  "erro": "Tecnico nao encontrado."
+}
+
+>>> Atualizar parcialmente (PATCH)
+ PATCH /tecnicos/6
+ [PASSOU] HTTP 200 (esperado 200)
+{
+  "id": 6,
+  "nome": "Teste Atualizado",
+  "email": "novo@empresa.com",
+  "especialidade": "SOFTWARE",
+  "status": "INATIVO"
+}
+ [PASSOU] status após o PATCH: INATIVO
+
+>>> PATCH sem campos (400)
+ PATCH /tecnicos/6
+ [PASSOU] HTTP 400 (esperado 400)
+{
+  "erro": "Envie ao menos um campo para atualizar: nome, email, especialidade, status."
+}
+
+>>> PATCH com status inválido (400)
+ PATCH /tecnicos/6
+ [PASSOU] HTTP 400 (esperado 400)
+{
+  "erro": "Payload invalido.",
+  "detalhes": [
+    "'status' deve ser um destes: ATIVO, INATIVO."
+  ]
+}
+
+>>> PATCH em técnico inexistente (404)
+ PATCH /tecnicos/99999
+ [PASSOU] HTTP 404 (esperado 404)
+{
+  "erro": "Tecnico nao encontrado."
+}
+
+>>> Remover técnico
+ DELETE /tecnicos/6
+ [PASSOU] HTTP 200 (esperado 200)
+{
+  "mensagem": "Tecnico removido com sucesso.",
+  "tecnico": {
+    "id": 6,
+    "nome": "Teste Atualizado",
+    "email": "novo@empresa.com",
+    "especialidade": "SOFTWARE",
+    "status": "INATIVO"
+  },
+  "chamadosDesvinculados": 0
+}
+
+>>> Remover de novo (404)
+ DELETE /tecnicos/6
+ [PASSOU] HTTP 404 (esperado 404)
+{
+  "erro": "Tecnico nao encontrado."
+}
+
+>>> Remover de novo (404)
+ DELETE /tecnicos/6
+ [PASSOU] HTTP 404 (esperado 404)
+{
+  "erro": "Tecnico nao encontrado."
+}
+
+######## CHAMADOS ########
+
+>>> Criar técnico auxiliar
+ POST /tecnicos
+ [PASSOU] HTTP 201 (esperado 201)
+{
+  "id": 7,
+  "nome": "Tecnico Auxiliar",
+  "email": "aux@empresa.com",
+  "especialidade": "HARDWARE",
+  "status": "ATIVO"
+}
+
+>>> Listar todos os chamados
+ GET /chamados
+ [PASSOU] HTTP 200 (esperado 200)
+[
+  {
+    "id": 1,
+    "titulo": "Sem acesso à internet",
+    "descricao": "Setor financeiro sem conexão desde as 8h.",
+    "prioridade": "ALTA",
+    "status": "EM_ANDAMENTO",
+    "solicitante": "Setor Financeiro",
+    "tecnicoId": 1,
+    "criadoEm": "2026-11-12T16:12:23.784Z",
+    "atualizadoEm": "2026-11-12T16:12:23.785Z"
+  },
+  {
+    "id": 2,
+    "titulo": "Erro ao abrir o ERP",
+    "descricao": "Sistema trava na tela de login.",
+    "prioridade": "CRITICA",
+    "status": "ABERTO",
+    "solicitante": "Setor Comercial",
+    "tecnicoId": 2,
+    "criadoEm": "2026-11-12T16:12:23.785Z",
+    "atualizadoEm": "2026-11-12T16:12:23.785Z"
+  },
+  {
+    "id": 3,
+    "titulo": "Troca de mouse",
+    "descricao": "Mouse da recepção parou de funcionar.",
+    "prioridade": "BAIXA",
+    "status": "ABERTO",
+    "solicitante": "Recepção",
+    "tecnicoId": null,
+    "criadoEm": "2026-11-12T16:12:23.785Z",
+    "atualizadoEm": "2026-11-12T16:12:23.785Z"
+  }
+]
+
+>>> Filtrar chamados por status
+ GET /chamados?status=ABERTO
+ [PASSOU] HTTP 200 (esperado 200)
+[
+  {
+    "id": 2,
+    "titulo": "Erro ao abrir o ERP",
+    "descricao": "Sistema trava na tela de login.",
+    "prioridade": "CRITICA",
+    "status": "ABERTO",
+    "solicitante": "Setor Comercial",
+    "tecnicoId": 2,
+    "criadoEm": "2026-11-12T16:12:23.785Z",
+    "atualizadoEm": "2026-11-12T16:12:23.785Z"
+  },
+  {
+    "id": 3,
+    "titulo": "Troca de mouse",
+    "descricao": "Mouse da recepção parou de funcionar.",
+    "prioridade": "BAIXA",
+    "status": "ABERTO",
+    "solicitante": "Recepção",
+    "tecnicoId": null,
+    "criadoEm": "2026-11-12T16:12:23.785Z",
+    "atualizadoEm": "2026-11-12T16:12:23.785Z"
+  }
+]
+
+>>> Filtrar chamados por prioridade
+ GET /chamados?prioridade=ALTA
+ [PASSOU] HTTP 200 (esperado 200)
+[
+  {
+    "id": 1,
+    "titulo": "Sem acesso à internet",
+    "descricao": "Setor financeiro sem conexão desde as 8h.",
+    "prioridade": "ALTA",
+    "status": "EM_ANDAMENTO",
+    "solicitante": "Setor Financeiro",
+    "tecnicoId": 1,
+    "criadoEm": "2026-11-12T16:12:23.784Z",
+    "atualizadoEm": "2026-11-12T16:12:23.785Z"
+  }
+]
+
+>>> Filtrar chamados por técnico
+ GET /chamados?tecnicoId=1
+ [PASSOU] HTTP 200 (esperado 200)
+[
+  {
+    "id": 1,
+    "titulo": "Sem acesso à internet",
+    "descricao": "Setor financeiro sem conexão desde as 8h.",
+    "prioridade": "ALTA",
+    "status": "EM_ANDAMENTO",
+    "solicitante": "Setor Financeiro",
+    "tecnicoId": 1,
+    "criadoEm": "2026-11-12T16:12:23.784Z",
+    "atualizadoEm": "2026-11-12T16:12:23.785Z"
+  }
+]
+
+>>> Criar chamado vinculado ao técnico auxiliar
+ POST /chamados
+ [PASSOU] HTTP 201 (esperado 201)
+{
+  "id": 5,
+  "titulo": "Monitor sem imagem",
+  "descricao": "Tela preta ao ligar.",
+  "prioridade": "MEDIA",
+  "solicitante": "RH",
+  "status": "ABERTO",
+  "tecnicoId": 7,
+  "criadoEm": "2026-11-12T16:13:06.087Z",
+  "atualizadoEm": "2026-11-12T16:13:06.087Z"
+}
+ [PASSOU] prioridade normalizada para maiúsculo: MEDIA
+ [PASSOU] status padrão do chamado: ABERTO
+
+>>> Criar chamado sem 'titulo' (400)
+ POST /chamados
+ [PASSOU] HTTP 400 (esperado 400)
+{
+  "erro": "Payload invalido.",
+  "detalhes": [
+    "'titulo' é obrigatório e deve ser um texto não vazio."
+  ]
+}
+
+>>> Criar chamado com prioridade inválida (400)
+ POST /chamados
+ [PASSOU] HTTP 400 (esperado 400)
+{
+  "erro": "Payload invalido.",
+  "detalhes": [
+    "'prioridade' é obrigatória e deve ser uma destas: BAIXA, MEDIA, ALTA, CRITICA."
+  ]
+}
+
+>>> Criar chamado com tecnicoId inexistente (404)
+ POST /chamados
+ [PASSOU] HTTP 404 (esperado 404)
+{
+  "erro": "Tecnico informado em tecnicoId nao encontrado."
+}
+
+>>> Buscar chamado por ID
+ GET /chamados/5
+ [PASSOU] HTTP 200 (esperado 200)
+{
+  "id": 5,
+  "titulo": "Monitor sem imagem",
+  "descricao": "Tela preta ao ligar.",
+  "prioridade": "MEDIA",
+  "solicitante": "RH",
+  "status": "ABERTO",
+  "tecnicoId": 7,
+  "criadoEm": "2026-11-12T16:13:06.087Z",
+  "atualizadoEm": "2026-11-12T16:13:06.087Z"
+}
+
+>>> Buscar chamado inexistente (404)
+ GET /chamados/99999
+ [PASSOU] HTTP 404 (esperado 404)
+{
+  "erro": "Chamado nao encontrado."
+}
+
+>>> Substituir chamado (PUT)
+ PUT /chamados/5
+ [PASSOU] HTTP 200 (esperado 200)
+{
+  "id": 5,
+  "titulo": "Monitor trocado",
+  "descricao": "Monitor novo instalado.",
+  "prioridade": "BAIXA",
+  "solicitante": "RH",
+  "status": "EM_ANDAMENTO",
+  "tecnicoId": 7,
+  "criadoEm": "2026-11-12T16:13:06.087Z",
+  "atualizadoEm": "2026-11-12T16:13:06.190Z"
+}
+
+>>> PUT incompleto (400)
+ PUT /chamados/5
+ [PASSOU] HTTP 400 (esperado 400)
+{
+  "erro": "Payload invalido.",
+  "detalhes": [
+    "'descricao' é obrigatória.",
+    "'solicitante' é obrigatório.",
+    "'prioridade' é obrigatória e deve ser uma destas: BAIXA, MEDIA, ALTA, CRITICA."
+  ]
+}
+
+>>> PUT em chamado inexistente (404)
+ PUT /chamados/99999
+ [PASSOU] HTTP 404 (esperado 404)
+{
+  "erro": "Chamado nao encontrado."
+}
+
+>>> Atualizar parcialmente (PATCH)
+ PATCH /chamados/5
+ [PASSOU] HTTP 200 (esperado 200)
+{
+  "id": 5,
+  "titulo": "Monitor trocado",
+  "descricao": "Monitor novo instalado.",
+  "prioridade": "BAIXA",
+  "solicitante": "RH",
+  "status": "RESOLVIDO",
+  "tecnicoId": 7,
+  "criadoEm": "2026-11-12T16:13:06.087Z",
+  "atualizadoEm": "2026-11-12T16:13:06.236Z"
+}
+ [PASSOU] status após o PATCH: RESOLVIDO
+
+>>> PATCH sem campos (400)
+ PATCH /chamados/5
+ [PASSOU] HTTP 400 (esperado 400)
+{
+  "erro": "Envie ao menos um campo para atualizar: titulo, descricao, prioridade, solicitante, status, tecnicoId."
+}
+
+>>> PATCH com tecnicoId inexistente (404)
+ PATCH /chamados/5
+ [PASSOU] HTTP 404 (esperado 404)
+{
+  "erro": "Tecnico informado em tecnicoId nao encontrado."
+}
+
+>>> PATCH em chamado inexistente (404)
+ PATCH /chamados/99999
+ [PASSOU] HTTP 404 (esperado 404)
+{
+  "erro": "Chamado nao encontrado."
+}
+
+>>> Remover técnico auxiliar (desvincula os chamados dele)
+ DELETE /tecnicos/7
+ [PASSOU] HTTP 200 (esperado 200)
+{
+  "mensagem": "Tecnico removido com sucesso.",
+  "tecnico": {
+    "id": 7,
+    "nome": "Tecnico Auxiliar",
+    "email": "aux@empresa.com",
+    "especialidade": "HARDWARE",
+    "status": "ATIVO"
+  },
+  "chamadosDesvinculados": 1
+}
+ [PASSOU] chamados desvinculados: 1
+
+>>> Conferir que o chamado ficou sem técnico
+ GET /chamados/5
+ [PASSOU] HTTP 200 (esperado 200)
+{
+  "id": 5,
+  "titulo": "Monitor trocado",
+  "descricao": "Monitor novo instalado.",
+  "prioridade": "BAIXA",
+  "solicitante": "RH",
+  "status": "RESOLVIDO",
+  "tecnicoId": null,
+  "criadoEm": "2026-11-12T16:13:06.087Z",
+  "atualizadoEm": "2026-11-12T16:13:06.304Z"
+}
+ [PASSOU] tecnicoId do chamado agora é null: null
+
+>>> Remover chamado
+ DELETE /chamados/5
+ [PASSOU] HTTP 200 (esperado 200)
+{
+  "mensagem": "Chamado removido com sucesso.",
+  "chamado": {
+    "id": 5,
+    "titulo": "Monitor trocado",
+    "descricao": "Monitor novo instalado.",
+    "prioridade": "BAIXA",
+    "solicitante": "RH",
+    "status": "RESOLVIDO",
+    "tecnicoId": null,
+    "criadoEm": "2026-11-12T16:13:06.087Z",
+    "atualizadoEm": "2026-11-12T16:13:06.304Z"
+  }
+}
+
+>>> Remover chamado de novo (404)
+ DELETE /chamados/5
+ [PASSOU] HTTP 404 (esperado 404)
+{
+  "erro": "Chamado nao encontrado."
+}
+
+######## ERROS GERAIS ########
+
+>>> JSON malformado (400)
+ POST /chamados
+ [PASSOU] HTTP 400 (esperado 400)
+{
+  "erro": "JSON malformado no corpo da requisicao."
+}
+
+>>> Rota inexistente (404)
+ GET /rota-que-nao-existe
+ [PASSOU] HTTP 404 (esperado 404)
+{
+  "erro": "Rota nao encontrada."
+}
+
+==================================================
+ RESULTADO: 49 passaram | 0 falharam
+==================================================
