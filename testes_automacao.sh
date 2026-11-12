@@ -108,6 +108,75 @@ executar_testes() {
   chamar "Remover técnico" DELETE "/tecnicos/$TEC_ID" 200
   chamar "Remover de novo (404)" DELETE "/tecnicos/$TEC_ID" 404
 
+	# ------- CÓDIGO ANTIGO (já existe) -------
+  chamar "Remover de novo (404)" DELETE "/tecnicos/$TEC_ID" 404
+
+  # ------- CÓDIGO NOVO (adicionar aqui) -------
+  # ============================ CHAMADOS ============================
+  echo ""
+  echo "######## CHAMADOS ########"
+
+  # Técnico auxiliar, só para vincular chamados durante o teste
+  chamar "Criar técnico auxiliar" POST /tecnicos 201 \
+  '{"nome":"Tecnico Auxiliar","email":"aux@empresa.com","especialidade":"HARDWARE"}'
+  TEC2_ID=$(jq -r '.id' "$TMP")
+
+  chamar "Listar todos os chamados" GET /chamados 200
+  chamar "Filtrar chamados por status" GET "/chamados?status=ABERTO" 200
+  chamar "Filtrar chamados por prioridade" GET "/chamados?prioridade=ALTA" 200
+  chamar "Filtrar chamados por técnico" GET "/chamados?tecnicoId=1" 200
+
+  chamar "Criar chamado vinculado ao técnico auxiliar" POST /chamados 201 \
+  '{"titulo":"Monitor sem imagem","descricao":"Tela preta ao ligar.","prioridade":"media","solicitante":"RH","tecnicoId":'"$TEC2_ID"'}'
+  CHAM_ID=$(jq -r '.id' "$TMP")
+
+  conferir "prioridade normalizada para maiúsculo" "$(jq -r '.prioridade' "$TMP")" "MEDIA"
+  conferir "status padrão do chamado" "$(jq -r '.status' "$TMP")" "ABERTO"
+
+  chamar "Criar chamado sem 'titulo' (400)" POST /chamados 400 \
+  '{"descricao":"x","prioridade":"ALTA","solicitante":"RH"}'
+  chamar "Criar chamado com prioridade inválida (400)" POST /chamados 400 \
+  '{"titulo":"x","descricao":"x","prioridade":"URGENTISSIMA","solicitante":"RH"}'
+  chamar "Criar chamado com tecnicoId inexistente (404)" POST /chamados 404 \
+  '{"titulo":"x","descricao":"x","prioridade":"ALTA","solicitante":"RH","tecnicoId":99999}'
+
+  chamar "Buscar chamado por ID" GET "/chamados/$CHAM_ID" 200
+  chamar "Buscar chamado inexistente (404)" GET /chamados/99999 404
+
+  chamar "Substituir chamado (PUT)" PUT "/chamados/$CHAM_ID" 200 \
+  '{"titulo":"Monitor trocado","descricao":"Monitor novo instalado.","prioridade":"BAIXA","solicitante":"RH","status":"EM_ANDAMENTO","tecnicoId":'"$TEC2_ID"'}'
+  chamar "PUT incompleto (400)" PUT "/chamados/$CHAM_ID" 400 '{"titulo":"So o titulo"}'
+  chamar "PUT em chamado inexistente (404)" PUT /chamados/99999 404 \
+  '{"titulo":"x","descricao":"x","prioridade":"ALTA","solicitante":"RH"}'
+
+  chamar "Atualizar parcialmente (PATCH)" PATCH "/chamados/$CHAM_ID" 200 \
+  '{"status":"RESOLVIDO"}'
+  conferir "status após o PATCH" "$(jq -r '.status' "$TMP")" "RESOLVIDO"
+
+  chamar "PATCH sem campos (400)" PATCH "/chamados/$CHAM_ID" 400 '{}'
+  chamar "PATCH com tecnicoId inexistente (404)" PATCH "/chamados/$CHAM_ID" 404 \
+  '{"tecnicoId":99999}'
+  chamar "PATCH em chamado inexistente (404)" PATCH /chamados/99999 404 \
+  '{"status":"FECHADO"}'
+
+  # Regra de negócio: remover técnico deixa os chamados dele sem responsável
+  chamar "Remover técnico auxiliar (desvincula os chamados dele)" DELETE "/tecnicos/$TEC2_ID" 200
+  conferir "chamados desvinculados" "$(jq -r '.chamadosDesvinculados' "$TMP")" "1"
+
+  chamar "Conferir que o chamado ficou sem técnico" GET "/chamados/$CHAM_ID" 200
+  conferir "tecnicoId do chamado agora é null" "$(jq -r '.tecnicoId' "$TMP")" "null"
+
+  chamar "Remover chamado" DELETE "/chamados/$CHAM_ID" 200
+  chamar "Remover chamado de novo (404)" DELETE "/chamados/$CHAM_ID" 404
+
+  # ============================ ERROS GERAIS ============================
+  echo ""
+  echo "######## ERROS GERAIS ########"
+  chamar "JSON malformado (400)" POST /chamados 400 '{ "titulo": '
+  chamar "Rota inexistente (404)" GET /rota-que-nao-existe 404
+
+  # ------- CÓDIGO ANTIGO (continua abaixo) -------
+
   # ============================ RESUMO ============================
   echo ""
   echo "=================================================="
